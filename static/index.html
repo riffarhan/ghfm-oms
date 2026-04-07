@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHFM OMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-primary:#0d1117;--bg-secondary:#151c28;--bg-tertiary:#1e2a3a;
+  --border:#2d3748;--text-primary:#e2e8f0;--text-secondary:#94a3b8;--text-dim:#64748b;
+  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--cyan:#22d3ee;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);font-size:13px;line-height:1.4}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--bg-secondary);border-bottom:1px solid var(--border)}
+.header h1{font-size:15px;font-weight:600;letter-spacing:0.5px}
+.header .meta{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--text-secondary)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px}
+
+/* Summary Strip */
+.summary{display:flex;gap:1px;padding:0;background:var(--border)}
+.summary .card{flex:1;padding:14px 20px;background:var(--bg-secondary)}
+.summary .label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.summary .value{font-size:20px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.summary .value.positive{color:var(--green)}
+.summary .value.negative{color:var(--red)}
+
+/* Layout */
+.main{display:grid;grid-template-columns:320px 1fr;gap:1px;background:var(--border);min-height:calc(100vh - 110px)}
+.panel{background:var(--bg-primary);overflow:auto}
+.panel-header{padding:10px 16px;background:var(--bg-secondary);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary)}
+
+/* Order Form */
+.form{padding:16px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.form-group input,.form-group select{width:100%;padding:8px 10px;background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-primary);border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:13px}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--blue)}
+.side-toggle{display:flex;gap:0}
+.side-toggle button{flex:1;padding:10px;border:1px solid var(--border);background:var(--bg-tertiary);color:var(--text-secondary);cursor:pointer;font-weight:600;font-size:13px;transition:all .15s}
+.side-toggle button:first-child{border-radius:2px 0 0 2px}
+.side-toggle button:last-child{border-radius:0 2px 2px 0}
+.side-toggle button.active-buy{background:rgba(16,185,129,0.15);color:var(--green);border-color:var(--green)}
+.side-toggle button.active-sell{background:rgba(239,68,68,0.15);color:var(--red);border-color:var(--red)}
+.submit-btn{width:100%;padding:12px;border:none;border-radius:2px;font-weight:600;font-size:14px;cursor:pointer;transition:all .15s;margin-top:8px}
+.submit-btn.buy{background:var(--green);color:#fff}
+.submit-btn.sell{background:var(--red);color:#fff}
+.submit-btn:hover{opacity:0.85}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* Tables */
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-dim);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--bg-secondary);position:sticky;top:0}
+td{padding:7px 12px;border-bottom:1px solid rgba(45,55,72,0.5);font-family:'JetBrains Mono',monospace;font-size:12px;white-space:nowrap}
+tr:hover{background:rgba(59,130,246,0.04)}
+.text-right{text-align:right}
+.text-green{color:var(--green)}
+.text-red{color:var(--red)}
+.text-amber{color:var(--amber)}
+.text-blue{color:var(--blue)}
+.text-dim{color:var(--text-dim)}
+
+/* Status badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:2px;font-size:10px;font-weight:600;letter-spacing:0.3px;font-family:'Inter',sans-serif}
+.badge-new{background:rgba(59,130,246,0.15);color:var(--blue)}
+.badge-sent{background:rgba(59,130,246,0.15);color:var(--blue)}
+.badge-ack{background:rgba(34,211,238,0.15);color:var(--cyan)}
+.badge-partial{background:rgba(245,158,11,0.15);color:var(--amber)}
+.badge-filled{background:rgba(16,185,129,0.15);color:var(--green)}
+.badge-rejected{background:rgba(239,68,68,0.15);color:var(--red)}
+.badge-cancelled{background:rgba(100,116,139,0.15);color:var(--text-dim)}
+.badge-pending{background:rgba(245,158,11,0.15);color:var(--amber)}
+
+/* Right panel tabs */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg-secondary)}
+.tabs button{padding:10px 20px;background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:12px;font-weight:500;border-bottom:2px solid transparent;transition:all .15s}
+.tabs button.active{color:var(--text-primary);border-bottom-color:var(--blue)}
+.tabs button:hover{color:var(--text-primary)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Toast notifications */
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:2px;font-size:12px;z-index:100;animation:fadeIn .2s}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>GHFM OMS</h1>
+  <div class="meta">
+    <span><span class="status-dot"></span>CONNECTED</span>
+    <span class="mono" id="clock"></span>
+  </div>
+</div>
+
+<div class="summary" id="summary">
+  <div class="card"><div class="label">Portfolio Value</div><div class="value mono" id="s-nav">--</div></div>
+  <div class="card"><div class="label">Unrealized P&L</div><div class="value mono" id="s-upnl">--</div></div>
+  <div class="card"><div class="label">Realized P&L</div><div class="value mono" id="s-rpnl">--</div></div>
+  <div class="card"><div class="label">Open Orders</div><div class="value mono" id="s-open">--</div></div>
+  <div class="card"><div class="label">Filled Today</div><div class="value mono" id="s-filled">--</div></div>
+</div>
+
+<div class="main">
+  <!-- Left: Order Entry -->
+  <div class="panel">
+    <div class="panel-header">Order Entry</div>
+    <div class="form">
+      <div class="form-group">
+        <label>Side</label>
+        <div class="side-toggle">
+          <button id="btn-buy" class="active-buy" onclick="setSide('BUY')">BUY</button>
+          <button id="btn-sell" onclick="setSide('SELL')">SELL</button>
+        </div>
+      </div>
+      <div class="form-group"><label>Symbol</label><input id="f-symbol" value="AAPL" list="symbols"><datalist id="symbols"><option value="AAPL"><option value="MSFT"><option value="NVDA"><option value="TSM"><option value="USDJPY"><option value="EURUSD"><option value="GBPUSD"><option value="USDSGD"><option value="GCQ26"><option value="CLQ26"><option value="TY1"><option value="JGB1"></datalist></div>
+      <div class="form-group"><label>Asset Class</label><select id="f-asset"><option value="EQUITY">EQUITY</option><option value="FX">FX</option><option value="COMMODITY">COMMODITY</option><option value="FIXED_INCOME">FIXED_INCOME</option></select></div>
+      <div class="form-group"><label>Order Type</label><select id="f-type" onchange="togglePrice()"><option value="MARKET">MARKET</option><option value="LIMIT">LIMIT</option></select></div>
+      <div class="form-group"><label>Quantity</label><input id="f-qty" type="number" value="1000" min="1"></div>
+      <div class="form-group" id="price-group" style="display:none"><label>Limit Price</label><input id="f-price" type="number" step="0.01"></div>
+      <div class="form-group"><label>Trader</label><select id="f-trader"><option value="pm_macro">pm_macro</option><option value="lawrence">lawrence</option><option value="yi_ling">yi_ling</option><option value="trader_fx">trader_fx</option><option value="trader_eq">trader_eq</option></select></div>
+      <div class="form-group"><label>Strategy (optional)</label><input id="f-strategy" placeholder="e.g. US_TECH_MOMENTUM"></div>
+      <button class="submit-btn buy" id="submit-btn" onclick="submitOrder()">BUY</button>
+    </div>
+  </div>
+
+  <!-- Right: Blotter/Positions -->
+  <div class="panel">
+    <div class="tabs">
+      <button class="active" onclick="showTab('orders',this)">Order Blotter</button>
+      <button onclick="showTab('positions',this)">Positions</button>
+    </div>
+    <div id="tab-orders" class="tab-content active">
+      <table><thead><tr>
+        <th>Time</th><th>Order ID</th><th>Symbol</th><th>Side</th><th>Type</th>
+        <th class="text-right">Qty</th><th class="text-right">Price</th>
+        <th class="text-right">Filled</th><th class="text-right">Avg Px</th>
+        <th>Status</th><th>Trader</th>
+      </tr></thead><tbody id="orders-body"></tbody></table>
+    </div>
+    <div id="tab-positions" class="tab-content">
+      <table><thead><tr>
+        <th>Symbol</th><th>Class</th><th class="text-right">Position</th>
+        <th class="text-right">Avg Cost</th><th class="text-right">Mkt Price</th>
+        <th class="text-right">Mkt Value</th><th class="text-right">Unreal P&L</th>
+        <th class="text-right">Real P&L</th>
+      </tr></thead><tbody id="positions-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<script>
+const API='';
+let side='BUY';
+
+function setSide(s){
+  side=s;
+  document.getElementById('btn-buy').className=s==='BUY'?'active-buy':'';
+  document.getElementById('btn-sell').className=s==='SELL'?'active-sell':'';
+  const btn=document.getElementById('submit-btn');
+  btn.textContent=s;btn.className='submit-btn '+(s==='BUY'?'buy':'sell');
+}
+
+function togglePrice(){
+  document.getElementById('price-group').style.display=document.getElementById('f-type').value==='LIMIT'?'block':'none';
+}
+
+function showTab(id,el){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+function badge(status){
+  const m={PENDING_NEW:'pending',NEW:'new',SENT:'sent',ACKNOWLEDGED:'ack',PARTIALLY_FILLED:'partial',FILLED:'filled',REJECTED:'rejected',CANCELLED:'cancelled',PENDING_CANCEL:'pending'};
+  return `<span class="badge badge-${m[status]||'new'}">${status}</span>`;
+}
+
+function fmt(n,d=2){const v=parseFloat(n);return isNaN(v)?'--':v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function fmtPnl(n){const v=parseFloat(n);if(!v&&v!==0)return'--';const cls=v>0?'text-green':v<0?'text-red':'text-dim';const sign=v>0?'+':'';return`<span class="${cls}">${sign}${fmt(n)}</span>`}
+function fmtSide(s){return`<span class="${s==='BUY'?'text-green':'text-red'}">${s}</span>`}
+function fmtTime(t){return t?new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):''}
+
+async function submitOrder(){
+  const body={symbol:document.getElementById('f-symbol').value,asset_class:document.getElementById('f-asset').value,side,order_type:document.getElementById('f-type').value,quantity:document.getElementById('f-qty').value,trader:document.getElementById('f-trader').value};
+  const strategy=document.getElementById('f-strategy').value;
+  if(strategy)body.strategy=strategy;
+  if(body.order_type==='LIMIT'){const p=document.getElementById('f-price').value;if(!p){toast('Limit price required','error');return}body.limit_price=p}
+  try{
+    const r=await fetch(API+'/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(r.ok){toast(`Order ${d.client_order_id} ${d.status}`,'success');refresh()}
+    else{toast(d.detail||JSON.stringify(d),'error')}
+  }catch(e){toast('Network error','error')}
+}
+
+async function refresh(){
+  try{
+    const [ordersR,posR]=await Promise.all([fetch(API+'/orders?limit=100'),fetch(API+'/positions')]);
+    const orders=await ordersR.json();
+    const positions=await posR.json();
+
+    // Orders table
+    const ob=document.getElementById('orders-body');
+    ob.innerHTML=orders.map(o=>`<tr>
+      <td>${fmtTime(o.created_at)}</td>
+      <td class="text-dim" style="font-size:11px">${o.client_order_id}</td>
+      <td><b>${o.symbol}</b></td>
+      <td>${fmtSide(o.side)}</td>
+      <td>${o.order_type}</td>
+      <td class="text-right">${fmt(o.quantity,0)}</td>
+      <td class="text-right">${o.limit_price?fmt(o.limit_price):'MKT'}</td>
+      <td class="text-right">${fmt(o.filled_quantity,0)}</td>
+      <td class="text-right">${parseFloat(o.average_price)?fmt(o.average_price):'--'}</td>
+      <td>${badge(o.status)}</td>
+      <td class="text-dim">${o.trader}</td>
+    </tr>`).join('');
+
+    // Positions table
+    const pb=document.getElementById('positions-body');
+    let totalNav=0,totalUpnl=0,totalRpnl=0;
+    positions.forEach(p=>{totalNav+=Math.abs(parseFloat(p.quantity)*parseFloat(p.current_price));totalUpnl+=parseFloat(p.unrealized_pnl);totalRpnl+=parseFloat(p.realized_pnl)});
+    pb.innerHTML=positions.map(p=>{
+      const mv=parseFloat(p.quantity)*parseFloat(p.current_price);
+      return`<tr>
+        <td><b>${p.symbol}</b></td>
+        <td class="text-dim">${p.asset_class}</td>
+        <td class="text-right">${fmt(p.quantity,0)}</td>
+        <td class="text-right">${fmt(p.average_cost)}</td>
+        <td class="text-right">${fmt(p.current_price)}</td>
+        <td class="text-right">${fmt(mv)}</td>
+        <td class="text-right">${fmtPnl(p.unrealized_pnl)}</td>
+        <td class="text-right">${fmtPnl(p.realized_pnl)}</td>
+      </tr>`}).join('');
+
+    // Summary
+    document.getElementById('s-nav').textContent='$ '+fmt(totalNav);
+    const upnlEl=document.getElementById('s-upnl');
+    upnlEl.textContent=(totalUpnl>=0?'+ ':'\u2212 ')+'$ '+fmt(Math.abs(totalUpnl));
+    upnlEl.className='value mono '+(totalUpnl>=0?'positive':'negative');
+    const rpnlEl=document.getElementById('s-rpnl');
+    rpnlEl.textContent=(totalRpnl>=0?'+ ':'\u2212 ')+'$ '+fmt(Math.abs(totalRpnl));
+    rpnlEl.className='value mono '+(totalRpnl>=0?'positive':'negative');
+    const openCount=orders.filter(o=>!['FILLED','REJECTED','CANCELLED'].includes(o.status)).length;
+    const filledCount=orders.filter(o=>o.status==='FILLED').length;
+    document.getElementById('s-open').textContent=openCount;
+    document.getElementById('s-filled').textContent=filledCount;
+  }catch(e){console.error(e)}
+}
+
+function toast(msg,type='success'){
+  const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
+}
+
+function updateClock(){document.getElementById('clock').textContent=new Date().toUTCString().slice(17,25)+' UTC'}
+
+setInterval(updateClock,1000);updateClock();
+setInterval(refresh,2000);refresh();
+</script>
+</body>
+</html>
